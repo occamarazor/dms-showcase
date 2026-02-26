@@ -1,0 +1,77 @@
+%% =========================================
+%% DMS SaaS — Executive Capability View
+%% =========================================
+flowchart LR
+    %% Clients
+    DEALER["Dealer Staff (Web / Mobile)"]
+    CUSTOMER["Customer"]
+    PARTNERS["External Service Providers"]
+
+    %% Application Layer
+    APP["DMS SaaS Application (Multi-Tenant)"]
+
+    %% Business Capabilities
+    SALES["Sales & Purchase"]
+    FIN["Financing"]
+    DOC["Contracts & Documents"]
+    ACC["Accounting & Invoicing"]
+    OPS["Dealer Operations"]
+
+    %% Business State
+    DATA["Tenant Business Data"]
+
+    %% Observability
+    OBS["Reporting & Audit"]
+
+    %% Flow
+    DEALER --> APP
+    CUSTOMER --> APP
+    PARTNERS --> APP
+
+    APP --> SALES
+    APP --> FIN
+    APP --> DOC
+    APP --> ACC
+    APP --> OPS
+
+    SALES --> DATA
+    FIN --> DATA
+    DOC --> DATA
+    ACC --> DATA
+    OPS --> DATA
+
+    SALES -.-> OBS
+    FIN -.-> OBS
+    DOC -.-> OBS
+    ACC -.-> OBS
+    OPS -.-> OBS
+
+    %% Shapes
+    APP@{ shape: rounded }
+    SALES@{ shape: trap-b }
+    FIN@{ shape: trap-b }
+    DOC@{ shape: trap-b }
+    ACC@{ shape: trap-b }
+    OPS@{ shape: trap-b }
+    DATA@{ shape: cyl }
+    OBS@{ shape: lean-r }
+
+    %% Classes
+    class DEALER client
+    class CUSTOMER client
+    class PARTNERS client
+    class APP app
+    class SALES domain
+    class FIN domain
+    class DOC domain
+    class ACC domain
+    class OPS domain
+    class DATA storage
+    class OBS obs
+
+    %% Palette
+    classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
+    classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
+    classDef domain fill:#fff2cc,stroke:#f5a623,color:#424242;
+    classDef storage fill:#e6f7e6,stroke:#7ed321,color:#424242;
+    classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
