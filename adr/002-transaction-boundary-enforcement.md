@@ -82,5 +82,5 @@ Explicit boundaries prevent:
 - Use read replicas strictly for reporting
 
 ## Related Decisions
-- ADR-001: Multi-Tenancy Strategy
-- ADR-003: Object Storage Strategy
+- [ADR-001: Multi-Tenancy Strategy](./001-multitenancy-strategy.md)
+- [ADR-003: Object Storage Strategy](./003-object-storage-strategy.md)

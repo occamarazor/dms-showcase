@@ -78,5 +78,5 @@ Separation preserves:
 - Periodic orphan cleanup job
 
 ## Related Decisions
-- ADR-001: Multi-Tenancy Strategy
-- ADR-002: Transaction Boundary Enforcement
+- [ADR-001: Multi-Tenancy Strategy](./001-multitenancy-strategy.md)
+- [ADR-002: Transaction Boundary Enforcement](./002-transaction-boundary-enforcement.md)

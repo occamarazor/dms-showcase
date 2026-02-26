@@ -73,4 +73,4 @@ This balances isolation and operational efficiency.
 - Monitoring for schema drift
 
 ## Related Decisions
-- ADR-002: Transaction Boundary Enforcement
+- [ADR-002: Transaction Boundary Enforcement](./002-transaction-boundary-enforcement.md)
