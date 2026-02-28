@@ -282,12 +282,34 @@ Planned conditional scaling (Hetzner Cloud):
 
 ------------------------------------------------------------------------
 
-## 📊 Executive View Diagram
+## 📊 Architecture Modeling
 
-![DMS Executive View](diagrams/dms-executive.png)
+The architecture is documented using the C4 model:
+
+- Level 1 — System Context
+- Level 2 — Container Diagram
+- Level 3 — Component Diagram
+
+This ensures clear separation of abstraction levels and consistent modeling discipline.
+
+### ⚙️ Level 1 — System Context
+
+![DMS Context](diagrams/dms-context.png)
+
+
+### ⚙️ Level 2 — Container Diagram
+
+![DMS Container](diagrams/dms-container.png)
+
+
+### ⚙️ C4 Level 3 — Component Diagram (REST API)
+
+![DMS Component](diagrams/dms-component.png)
 
 ------------------------------------------------------------------------
 
-## ⚙️ Technical View Diagram
-
-![DMS Technical View](diagrams/dms-technical.png)
+## Architectural Reflection
+- Early infrastructure scaling (replicas, LB) was likely premature given tenant count.
+- Strict ACID enforcement was prioritized due to financial domain invariants.
+- The system adopts a schema-per-tenant strategy to enforce structural tenant isolation at the database level, minimizing cross-tenant data leakage risk in a financial domain.
+- Gateway abstraction was intentionally simplified to avoid premature complexity.

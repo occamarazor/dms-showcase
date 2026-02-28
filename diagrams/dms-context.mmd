@@ -1,0 +1,47 @@
+%% =========================================
+%% C4 Level 1 — Context Diagram
+%% Actors + external dependencies
+%% =========================================
+flowchart LR
+    %% =========================================
+    %% Elements
+    %% =========================================
+
+    %% External
+    DEALER["Dealer Staff<br>(Web / Mobile)"]
+    CUSTOMER["Customer"]
+    PARTNERS["External Service Providers"]
+
+    %% System Under Design
+    APP["DMS SaaS Application<br>(Multi-Tenant)"]
+
+    %% External Systems
+    OBS["Observability Stack<br>(Logs / Metrics)"]
+
+    %% =========================================
+    %% Relationships
+    %% =========================================
+
+    DEALER -->|Uses| APP
+    CUSTOMER -->|Interacts via Dealer| APP
+    PARTNERS -->|API / Integration| APP
+
+    APP -.->|Emits Logs / Metrics| OBS
+
+    %% =========================================
+    %% Legend (Authoritative)
+    %% =========================================
+
+    %% Shapes
+    APP@{ shape: rounded }
+    OBS@{ shape: lean-r }
+
+    %% Classes
+    class DEALER,CUSTOMER,PARTNERS client
+    class APP app
+    class OBS obs
+
+    %% Colors
+    classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
+    classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
+    classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;

@@ -1,0 +1,81 @@
+%% =========================================
+%% C4 Level 3 — Component Diagram
+%% Detailed internal REST API structure (NestJS Monolith)
+%% =========================================
+flowchart TB
+    %% =========================================
+    %% Elements
+    %% =========================================
+
+    %% Entry
+    CONTROLLERS["REST Controllers"]
+
+    %% Cross-Cutting
+    AUTH["JWT Auth Guard"]
+    TENANT["Tenant Resolver"]
+    TX["Application Service /<br>Transaction Manager"]
+
+    %% Domain Modules
+    SALES["Sales Module"]
+    FIN["Financing Module"]
+    ACC["Accounting Module"]
+    DOC["Document Module"]
+    OPS["Dealer Ops Module"]
+
+    %% Infrastructure Adapters
+    REPOS["Repository Layer"]
+    STORAGE["Storage Adapter"]
+
+    %% =========================================
+    %% Relationships
+    %% =========================================
+
+    %% Cross-Cutting Flow
+    CONTROLLERS --> AUTH
+    AUTH --> TENANT
+    TENANT --> TX
+
+    %% Domain Flow
+    TX --> SALES
+    TX --> FIN
+    TX --> ACC
+    TX --> DOC
+    TX --> OPS
+
+    %% Infrastructure Flow
+    SALES --> REPOS
+    FIN --> REPOS
+    ACC --> REPOS
+    OPS --> REPOS
+
+    DOC --> STORAGE
+
+    %% =========================================
+    %% Legend (Authoritative)
+    %% =========================================
+
+    %% Shapes
+    CONTROLLERS@{ shape: rounded }
+    AUTH@{ shape: hex }
+    TENANT@{ shape: hex }
+    TX@{ shape: hex }
+    SALES@{ shape: trap-b }
+    FIN@{ shape: trap-b }
+    ACC@{ shape: trap-b }
+    DOC@{ shape: trap-b }
+    OPS@{ shape: trap-b }
+    REPOS@{ shape: rounded }
+    STORAGE@{ shape: rounded }
+
+    %% Classes
+    class CONTROLLERS app
+    class AUTH,TENANT,TX sec
+    class SALES,FIN,ACC,DOC,OPS domain
+    class REPOS infra
+    class STORAGE infra
+
+    %% Colors
+    classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
+    classDef sec fill:#ccd9ff,stroke:#003399,color:#424242;
+    classDef domain fill:#fff2cc,stroke:#f5a623,color:#424242;
+    classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;

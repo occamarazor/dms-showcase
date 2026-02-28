@@ -1,0 +1,74 @@
+%% =========================================
+%% C4 Level 2 — Container Diagram
+%% High-level technology + communications
+%% =========================================
+flowchart LR
+    %% =========================================
+    %% Elements
+    %% =========================================
+
+    %% External
+    WEB["Web App<br>(React)"]
+    MOBILE["Mobile App<br>(React Native)"]
+    EXT["External Systems"]
+
+    %% Edge / Entry Points
+    LB["Load Balancer<br>(Hetzner)"]
+
+    %% Application
+    API["REST API<br>(NestJS Monolith)"]
+
+    %% Data Stores
+    DB["Schema-per-Tenant<br>(PostgreSQL)"]
+    REDIS["Cache / Queue<br>(Redis)"]
+    OBJ["S3-Compatible OBS<br>(Hetzner Object Storage)"]
+
+    %% Cross-Cutting
+    OBS["Logs / Metrics<br>(Observability Stack)"]
+
+    %% =========================================
+    %% Relationships
+    %% =========================================
+
+    %% Client flow
+    WEB -->|HTTPS| LB
+    MOBILE -->|HTTPS| LB
+    EXT -->|HTTPS| LB
+
+    %% App flow
+    LB -->|REST| API
+
+    %% Data flow
+    API -->|SQL| DB
+    API -->|Redis TCP| REDIS
+    API -->|S3 API| OBJ
+
+    %% Observability flow
+    LB -.-> OBS
+    API -.-> OBS
+
+    %% =========================================
+    %% Legend (Authoritative)
+    %% =========================================
+
+    %% Shapes
+    LB@{ shape: stadium }
+    API@{ shape: rounded }
+    DB@{ shape: cyl }
+    REDIS@{ shape: h-cyl }
+    OBJ@{ shape: cyl }
+    OBS@{ shape: lean-r }
+
+    %% Classes
+    class WEB,MOBILE,EXT client
+    class LB infra
+    class API app
+    class DB,REDIS,OBJ storage
+    class OBS obs
+
+    %% Colors
+    classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
+    classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;
+    classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
+    classDef storage fill:#e6f7e6,stroke:#7ed321,color:#424242;
+    classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
