@@ -97,25 +97,21 @@ The system required stabilization before any scalability investment.
 - Tenant-aware request routing
 - Isolated scaling of integration workloads
 
-
 ### Reliability
 
 - Idempotent integration flows
 - Retry policies with backoff
 - Explicit transaction boundaries
 
-
 ### Performance
 
 - Redis caching for high-read aggregates
 - Asynchronous processing for external integrations
 
-
 ### Availability
 
 - Multi-environment deployment (Dev / Staging / Prod)
 - Container orchestration with Kubernetes
-
 
 ### Consistency
 
@@ -125,14 +121,12 @@ The system required stabilization before any scalability investment.
 - Atomic operations across financial workflows
 - Eventual consistency across external integrations
 
-
 ### Security
 
 - Tenant data isolation (schema-per-tenant or logical partitioning)
 - JWT-based authentication
 - Audit logging for financial operations
 - GDPR-aligned data handling
-
 
 ### Operability
 
@@ -165,21 +159,21 @@ Evolution path: Modular Monolith → Selective Service Decomposition → Distrib
 
 ### 🟠 API Layer
 
--   REST API (tenant-aware routing)
--   Use-case orchestration
--   Request validation
--   DTO mapping
--   API versioning
+- REST API (tenant-aware routing)
+- Use-case orchestration
+- Request validation
+- DTO mapping
+- API versioning
 
 ### 🟡 Domain Services
 
 Bounded contexts:
 
--   Sales & Purchase
--   Financing
--   Contracts & Document Management
--   Accounting & Invoicing
--   Dealer Operations
+- Sales
+- Financing
+- Accounting
+- Dealer Operations
+- Document Management
 
 Each context:
 - Owns its data
@@ -188,9 +182,9 @@ Each context:
 
 ### 🟢 Persistence Layer
 
--   PostgreSQL (multi-tenant model)
--   Redis (cache & async support)
--   Object storage for documents
+- PostgreSQL (shema-per-tenant model)
+- Redis (cache & async support)
+- Hetzner Object Storage for documents (S3-compatible)
 
 ### 🔵 Infrastructure & Integration
 
@@ -210,19 +204,19 @@ Planned conditional scaling (Hetzner Cloud):
 
 ### 🔷 Security & Resilience
 
--   OAuth2 / JWT authentication
--   Role-based access control
--   Rate limiting & WAF
--   Secrets management
--   Financial audit trail
+- OAuth2 / JWT authentication
+- Role-based access control
+- Rate limiting & WAF
+- Secrets management
+- Financial audit trail
 
 ### 🟣 Observability & Cross-Cutting
 
--   Structured logging
--   Centralized log aggregation
--   Metrics & alerting
--   Business telemetry
--   Tenant-scoped audit logs
+- Structured logging
+- Centralized log aggregation
+- Metrics & alerting
+- Business telemetry
+- Tenant-scoped audit logs
 
 ------------------------------------------------------------------------
 

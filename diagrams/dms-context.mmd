@@ -1,47 +1,93 @@
 %% =========================================
-%% C4 Level 1 — Context Diagram
-%% Actors + external dependencies
+%% C4 Level 1 — Context
+%% Actors + external systems
 %% =========================================
 flowchart LR
-    %% =========================================
-    %% Elements
-    %% =========================================
 
-    %% External
-    DEALER["Dealer Staff<br>(Web / Mobile)"]
-    CUSTOMER["Customer"]
-    PARTNERS["External Service Providers"]
+%% =========================================
+%% Actors
+%% =========================================
 
-    %% System Under Design
-    APP["DMS SaaS Application<br>(Multi-Tenant)"]
+%% ---- Customers ----
+ANON["Anonymous Visitor"]
+CUSTOMER["Registered Customer"]
+%% ---- Tenant-Level ----
+SALES["Sales Agent"]
+DEALER_ADMIN["Dealer Administrator"]
+%% ---- Platform-Level ----
+PLATFORM_ADMIN["Platform Administrator"]
+SUPPORT["Support Engineer"]
 
-    %% External Systems
-    OBS["Observability Stack<br>(Logs / Metrics)"]
+%% =========================================
+%% Core Platform
+%% =========================================
 
-    %% =========================================
-    %% Relationships
-    %% =========================================
+DMS["DMS SaaS Platform"]
 
-    DEALER -->|Uses| APP
-    CUSTOMER -->|Interacts via Dealer| APP
-    PARTNERS -->|API / Integration| APP
+%% =========================================
+%% External Systems
+%% =========================================
 
-    APP -.->|Emits Logs / Metrics| OBS
+%% ---- Financial Systems ----
+BANKS["Loan Providers / Banks"]
+INSURANCE["Insurance Providers"]
 
-    %% =========================================
-    %% Legend (Authoritative)
-    %% =========================================
+%% ---- Payment Gateways ----
+PAYMENT["Stripe/Adyen"]
 
-    %% Shapes
-    APP@{ shape: rounded }
-    OBS@{ shape: lean-r }
+%% ---- Government / Vehicle Registries ----
+VEHICLE_REG["Vehicle Registry"]
 
-    %% Classes
-    class DEALER,CUSTOMER,PARTNERS client
-    class APP app
-    class OBS obs
+%% ---- eSignature Providers ----
+ESIGN["DocuSign/Adobe Sign/local eID"]
 
-    %% Colors
-    classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
-    classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
-    classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
+%% ---- Notification Infrastructure ----
+NOTIFY["SendGrid/Twilio"]
+
+%% =========================
+%% Interactions
+%% =========================
+
+%% ---- Actors ----
+ANON -->|Browse listings<br>Save favourites| DMS
+CUSTOMER -->|Apply for financing<br>Select insurance<br>Sign contract| DMS
+SALES -->|Create offers<br>Submit financing<br>Generate contracts| DMS
+DEALER_ADMIN -->|Manage dealership<br>Inventory<br>Staff| DMS
+PLATFORM_ADMIN -->|Create tenants<br>Assign SaaS tiers| DMS
+SUPPORT -->|Investigate incidents<br>Tenant diagnostics| DMS
+
+%% ---- External Systems ----
+DMS -->|Submit loan applications<br>Receive approval| BANKS
+DMS -->|Request insurance quotes<br>Issue policies| INSURANCE
+DMS -->|Process payments| PAYMENT
+DMS -->|Verify VIN<br>Submit registration| VEHICLE_REG
+DMS -->|Send contracts for signing<br>Receive signed docs| ESIGN
+DMS -->|Notify users<br>Send transaction alerts| NOTIFY
+
+%% =========================
+%% Shapes
+%% =========================
+
+DMS@{ shape: rounded }
+BANKS@{ shape: stadium }
+INSURANCE@{ shape: stadium }
+PAYMENT@{ shape: stadium }
+VEHICLE_REG@{ shape: stadium }
+ESIGN@{ shape: stadium }
+NOTIFY@{ shape: stadium }
+
+%% =========================
+%% Classes
+%% =========================
+
+class ANON,CUSTOMER,SALES,DEALER_ADMIN,PLATFORM_ADMIN,SUPPORT client
+class DMS app
+class BANKS,INSURANCE,PAYMENT,VEHICLE_REG,ESIGN,NOTIFY infra
+
+%% =========================
+%% Palette (Legend)
+%% =========================
+
+classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
+classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;
+classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
