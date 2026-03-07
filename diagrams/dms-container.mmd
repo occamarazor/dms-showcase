@@ -94,9 +94,9 @@ subgraph PLATFORM["DMS SaaS Platform"]
     %% MICROSERVICES
     %% =========================
 
-    %% ---- Integration Gateway ----%%
+    %% ---- Integration Service ----%%
     INTEGRATION["
-    **Integration Gateway**
+    **Integration Service**
     NestJS microservice
     <br>
     - Sends bank requests
@@ -213,28 +213,31 @@ class BANK,INSURANCE,PAYMENT,ESIGN external
 %% =========================
 
 %% ---- System ----
-CLIENT -->|"Sends API requests | Sync | HTTPS | 443"| GATEWAY
-GATEWAY -->|"Routes API requests | Sync | HTTP REST | 8080"| API
-API -->|"Validates identity tokens | Sync | HTTPS | 443"| AUTH
-API -->|"Reads/writes transactional data | Sync | PostgreSQL | 5432"| POSTGRES
-API -->|"Sends external service request | Sync | HTTP REST | 3003"| INTEGRATION
-API -->|"Reads/writes cached data | Sync | Redis | 6379"| REDIS
-API -->|"Publishes domain events | Async message | Redis queue | 6379"| REDIS
-WORKER -->|"Consumes background jobs | Async message | Redis queue | 6379"| REDIS
-WORKER -->|"Sends notification commands | Sync | HTTP REST | 3001"| NOTIFY
-WORKER -->|"Requests document generation | Sync | HTTP REST | 3002"| DOCS
-DOCS -->|"Stores generated documents | Object API | HTTPS | 443"| OBJECTS
+CLIENT -->|"Sends API requests | Sync | HTTPS | :443"| GATEWAY
+GATEWAY -->|"Routes API requests | Sync | HTTP REST | :8080"| API
+API -->|"Validates identity tokens | Sync | HTTPS | :443"| AUTH
+API -->|"Reads/writes transactional data | Sync | PostgreSQL | :5432"| POSTGRES
+API -->|"Sends external service request | Sync | HTTP REST | :3003"| INTEGRATION
+API -->|"Reads/writes cached data | Sync | Redis | :6379"| REDIS
+API -->|"Publishes domain events | Async message | Redis queue | :6379"| REDIS
+WORKER -->|"Consumes background jobs | Async message | Redis queue | :6379"| REDIS
+WORKER -->|"Sends notification commands | Sync | HTTP REST | :3001"| NOTIFY
+WORKER -->|"Requests document generation | Sync | HTTP REST | :3002"| DOCS
+DOCS -->|"Stores generated documents | Object API | HTTPS | :443"| OBJECTS
 
 %% ---- External ----
-INTEGRATION -->|"Requests loan processing  | Sync | HTTPS | 443"| BANK
-INTEGRATION -->|"Requests insurance quotes | Sync | HTTPS | 443"| INSURANCE
-INTEGRATION -->|"Executes payment transaction | Sync | HTTPS | 443"| PAYMENT
-INTEGRATION -->|"Creates signature requests | Sync | HTTPS | 443"| ESIGN
+INTEGRATION -->|"Requests loan processing  | Sync | HTTPS | :443"| BANK
+INTEGRATION -->|"Requests insurance quotes | Sync | HTTPS | :443"| INSURANCE
+INTEGRATION -->|"Executes payment transaction | Sync | HTTPS | :443"| PAYMENT
+INTEGRATION -->|"Creates signature requests | Sync | HTTPS | :443"| ESIGN
 
 %% ---- Observability ----
-API -.->|"Emits app metrics | Telemetry | OTLP | 4317"| OBS
-WORKER -.->|"Emits worker metrics | Telemetry | OTLP | 4317"| OBS
-GATEWAY -.->|"Exports gateway metrics | Prometheus scrape | HTTP | 9090"| OBS
+GATEWAY -.->|"Exports gateway metrics | Prometheus scrape | HTTP | :9090"| OBS
+API -.->|"Emits app metrics | Telemetry | OTLP | :4317"| OBS
+WORKER -.->|"Emits worker metrics | Telemetry | OTLP | :4317"| OBS
+NOTIFY -.->|"Emits notification service metrics | Telemetry | OTLP | :4317"| OBS
+DOCS -.->|"Emits document service metrics | Telemetry | OTLP | :4317"| OBS
+INTEGRATION -.->|"Emits integration service metrics | Telemetry | OTLP | :4317"| OBS
 
 %% =========================
 %% PALETTE (LEGEND)
