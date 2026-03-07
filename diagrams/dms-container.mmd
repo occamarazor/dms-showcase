@@ -26,14 +26,29 @@ subgraph PLATFORM["DMS SaaS Platform"]
     %% INFRASTRUCTURE
     %% =========================
 
+    %% ---- Load balancer ----%%
+    LB["
+    **Load Balancer**
+    Hetzner
+    <br>
+    - Exposes public endpoint
+    - Terminates TLS
+    - Performs health checks
+    - Distributes traffic
+    "]
+
+    class LB infra
+    LB@{ shape: stadium }
+
+    %% ---- API Gateway ----%%
     GATEWAY["
     **API Gateway**
-    NGINX Ingress
+    NGINX Reverse Proxy
     <br>
-    - Terminates TLS
-    - Routes API traffic
+    - Routes API requests
     - Applies rate limits
-    - Logs requests
+    - Logs access traffic
+    - Forwards upstream requests
     "]
 
     class GATEWAY infra
@@ -183,17 +198,31 @@ subgraph PLATFORM["DMS SaaS Platform"]
     %% OBSERVABILITY
     %% =========================
 
-    OBS["
-    **Observability Stack**
-    Prometheus / Grafana
+    %% ---- Metrics ----
+    OBS_METRICS["
+    **Metrics Platform**
+    Prometheus + Grafana
     <br>
     - Collects system metrics
-    - Aggregates telemetry
+    - Scrapes service telemetry
     - Provides monitoring dashboards
     "]
 
-    class OBS obs
-    OBS@{ shape: lean-r }
+    class OBS_METRICS obs
+    OBS_METRICS@{ shape: lean-r }
+
+    %% ---- Logs ----
+    OBS_LOGS["
+    **Log Aggregation**
+    Grafana Loki
+    <br>
+    - Aggregates application logs
+    - Stores structured logs
+    - Enables log exploration
+    "]
+
+    class OBS_LOGS obs
+    OBS_LOGS@{ shape: lean-r }
 end
 %% ===== SYSTEM BOUNDARY END =====
 
@@ -213,31 +242,46 @@ class BANK,INSURANCE,PAYMENT,ESIGN external
 %% =========================
 
 %% ---- System ----
-CLIENT -->|"Sends API requests | Sync | HTTPS | :443"| GATEWAY
+CLIENT -->|"Sends API requests | Sync | HTTPS | :443"| LB
+LB -->|"Forwards traffic | Sync | HTTP | :80"| GATEWAY
 GATEWAY -->|"Routes API requests | Sync | HTTP REST | :8080"| API
+
 API -->|"Validates identity tokens | Sync | HTTPS | :443"| AUTH
+
 API -->|"Reads/writes transactional data | Sync | PostgreSQL | :5432"| POSTGRES
-API -->|"Sends external service request | Sync | HTTP REST | :3003"| INTEGRATION
 API -->|"Reads/writes cached data | Sync | Redis | :6379"| REDIS
+
 API -->|"Publishes domain events | Async message | Redis queue | :6379"| REDIS
 WORKER -->|"Consumes background jobs | Async message | Redis queue | :6379"| REDIS
+
+API -->|"Sends integration requests | Sync | HTTP REST | :3003"| INTEGRATION
+
 WORKER -->|"Sends notification commands | Sync | HTTP REST | :3001"| NOTIFY
 WORKER -->|"Requests document generation | Sync | HTTP REST | :3002"| DOCS
+
 DOCS -->|"Stores generated documents | Object API | HTTPS | :443"| OBJECTS
 
-%% ---- External ----
+%% ---- External Integrations ----
 INTEGRATION -->|"Requests loan processing  | Sync | HTTPS | :443"| BANK
 INTEGRATION -->|"Requests insurance quotes | Sync | HTTPS | :443"| INSURANCE
 INTEGRATION -->|"Executes payment transaction | Sync | HTTPS | :443"| PAYMENT
 INTEGRATION -->|"Creates signature requests | Sync | HTTPS | :443"| ESIGN
 
-%% ---- Observability ----
-GATEWAY -.->|"Exports gateway metrics | Prometheus scrape | HTTP | :9090"| OBS
-API -.->|"Emits app metrics | Telemetry | OTLP | :4317"| OBS
-WORKER -.->|"Emits worker metrics | Telemetry | OTLP | :4317"| OBS
-NOTIFY -.->|"Emits notification service metrics | Telemetry | OTLP | :4317"| OBS
-DOCS -.->|"Emits document service metrics | Telemetry | OTLP | :4317"| OBS
-INTEGRATION -.->|"Emits integration service metrics | Telemetry | OTLP | :4317"| OBS
+%% ---- Metrics ----
+GATEWAY -.->|"Exports gateway metrics | Prometheus scrape | HTTP | :9113"| OBS_METRICS
+API -.->|"Exposes application metrics | Prometheus scrape | HTTP | :9464"| OBS_METRICS
+WORKER -.->|"Exposes worker metrics | Prometheus scrape | HTTP | :9464"| OBS_METRICS
+NOTIFY -.->|"Exposes service metrics | Prometheus scrape | HTTP | :9464"| OBS_METRICS
+DOCS -.->|"Exposes service metrics | Prometheus scrape | HTTP | :9464"| OBS_METRICS
+INTEGRATION -.->|"Exposes service metrics | Prometheus scrape | HTTP | :9464"| OBS_METRICS
+
+%% ---- Logs ----
+API -.->|"Ships application logs | Push | HTTP | :3100"| OBS_LOGS
+WORKER -.->|"Ships worker logs | Push | HTTP | :3100"| OBS_LOGS
+GATEWAY -.->|"Ships access logs | Push | HTTP | :3100"| OBS_LOGS
+NOTIFY -.->|"Ships service logs | Push | HTTP | :3100"| OBS_LOGS
+DOCS -.->|"Ships service logs | Push | HTTP | :3100"| OBS_LOGS
+INTEGRATION -.->|"Ships service logs | Push | HTTP | :3100"| OBS_LOGS
 
 %% =========================
 %% PALETTE (LEGEND)
