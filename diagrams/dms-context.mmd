@@ -1,11 +1,11 @@
 %% =========================================
 %% C4 Level 1 — Context
-%% Actors + external systems
+%% System actors + external systems
 %% =========================================
 flowchart LR
 
 %% =========================================
-%% Actors
+%% ACTORS
 %% =========================================
 
 %% ---- Customers ----
@@ -19,13 +19,13 @@ PLATFORM_ADMIN["Platform Administrator"]
 SUPPORT["Support Engineer"]
 
 %% =========================================
-%% Core Platform
+%% CORE PLATFORM
 %% =========================================
 
 DMS["DMS SaaS Platform"]
 
 %% =========================================
-%% External Systems
+%% EXTERNAL SYSTEMS
 %% =========================================
 
 %% ---- Financial Systems ----
@@ -33,19 +33,16 @@ BANKS["Loan Providers / Banks"]
 INSURANCE["Insurance Providers"]
 
 %% ---- Payment Gateways ----
-PAYMENT["Stripe/Adyen"]
+PAYMENT["Payment Gateway"]
 
 %% ---- Government / Vehicle Registries ----
 VEHICLE_REG["Vehicle Registry"]
 
 %% ---- eSignature Providers ----
-ESIGN["DocuSign/Adobe Sign/local eID"]
-
-%% ---- Notification Infrastructure ----
-NOTIFY["SendGrid/Twilio"]
+ESIGN["eSignature Service"]
 
 %% =========================
-%% Interactions
+%% INTERACTIONS
 %% =========================
 
 %% ---- Actors ----
@@ -62,32 +59,24 @@ DMS -->|Request insurance quotes<br>Issue policies| INSURANCE
 DMS -->|Process payments| PAYMENT
 DMS -->|Verify VIN<br>Submit registration| VEHICLE_REG
 DMS -->|Send contracts for signing<br>Receive signed docs| ESIGN
-DMS -->|Notify users<br>Send transaction alerts| NOTIFY
 
 %% =========================
-%% Shapes
+%% SHAPES
 %% =========================
-
 DMS@{ shape: rounded }
-BANKS@{ shape: stadium }
-INSURANCE@{ shape: stadium }
-PAYMENT@{ shape: stadium }
-VEHICLE_REG@{ shape: stadium }
-ESIGN@{ shape: stadium }
-NOTIFY@{ shape: stadium }
 
 %% =========================
-%% Classes
+%% CLASSES
 %% =========================
 
 class ANON,CUSTOMER,SALES,DEALER_ADMIN,PLATFORM_ADMIN,SUPPORT client
 class DMS app
-class BANKS,INSURANCE,PAYMENT,VEHICLE_REG,ESIGN,NOTIFY infra
+class BANKS,INSURANCE,PAYMENT,VEHICLE_REG,ESIGN external
 
 %% =========================
-%% Palette (Legend)
+%% PALETTE (LEGEND)
 %% =========================
 
 classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
-classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;
 classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
+classDef external fill:#f5f5f5,stroke:#6b6b6b,stroke-dasharray: 5 5,color:#424242;

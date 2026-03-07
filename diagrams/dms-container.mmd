@@ -3,72 +3,248 @@
 %% High-level technology + communications
 %% =========================================
 flowchart LR
-    %% =========================================
-    %% Elements
-    %% =========================================
 
-    %% External
-    WEB["Web App<br>(React)"]
-    MOBILE["Mobile App<br>(React Native)"]
-    EXT["External Systems"]
+%% ===== SYSTEM BOUNDARY START =====
+subgraph PLATFORM["DMS SaaS Platform"]
+    %% =========================
+    %% CLIENTS
+    %% =========================
 
-    %% Edge / Entry Points
-    LB["Load Balancer<br>(Hetzner)"]
+    CLIENT["
+    **Dealer Web App**
+    React SPA
+    <br>
+    - Dealer UI
+    - Forms, dashboards, reports
+    - Sends API requests
+    - Displays operational data
+    "]
 
-    %% Application
-    API["REST API<br>(NestJS Monolith)"]
+    class CLIENT client
 
-    %% Data Stores
-    DB["Schema-per-Tenant<br>(PostgreSQL)"]
-    REDIS["Cache / Queue<br>(Redis)"]
-    OBJ["S3-Compatible OBS<br>(Hetzner Object Storage)"]
+    %% =========================
+    %% INFRASTRUCTURE
+    %% =========================
 
-    %% Cross-Cutting
-    OBS["Logs / Metrics<br>(Observability Stack)"]
+    GATEWAY["
+    **API Gateway**
+    NGINX Ingress
+    <br>
+    - Terminates TLS
+    - Routes API traffic
+    - Applies rate limits
+    - Logs requests
+    "]
 
-    %% =========================================
-    %% Relationships
-    %% =========================================
+    class GATEWAY infra
+    GATEWAY@{ shape: stadium }
 
-    %% Client flow
-    WEB -->|HTTPS| LB
-    MOBILE -->|HTTPS| LB
-    EXT -->|HTTPS| LB
+    %% =========================
+    %% SECURITY
+    %% =========================
 
-    %% App flow
-    LB -->|REST| API
+    AUTH["
+    **Identity Provider**
+    OAuth2 / JWT
+    (Keycloak/Auth0)
+    <br>
+    - Authenticates users
+    - Issuance JWT tokens
+    - Enforces RBAC policies
+    "]
 
-    %% Data flow
-    API -->|SQL| DB
-    API -->|Redis TCP| REDIS
-    API -->|S3 API| OBJ
+    class AUTH sec
+    AUTH@{ shape: hex }
 
-    %% Observability flow
-    LB -.-> OBS
-    API -.-> OBS
+    %% =========================
+    %% APPLICATION
+    %% =========================
 
-    %% =========================================
-    %% Legend (Authoritative)
-    %% =========================================
+    %% ---- Core API ----%%
+    API["
+    **Core API**
+    NestJS Modular Monolith
+    <br>
+    - Sales management
+    - Financing workflows
+    - Accounting transactions
+    - Dealer operations
+    - Enforces business rules
+    - Publishes domain events
+    "]
 
-    %% Shapes
-    LB@{ shape: stadium }
-    API@{ shape: rounded }
-    DB@{ shape: cyl }
-    REDIS@{ shape: h-cyl }
-    OBJ@{ shape: cyl }
-    OBS@{ shape: lean-r }
-
-    %% Classes
-    class WEB,MOBILE,EXT client
-    class LB infra
     class API app
-    class DB,REDIS,OBJ storage
-    class OBS obs
+    API@{ shape: rounded }
 
-    %% Colors
-    classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
-    classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;
-    classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
-    classDef storage fill:#e6f7e6,stroke:#7ed321,color:#424242;
-    classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
+    %% ---- Background Worker ----%%
+    WORKER["
+    **Background Worker**
+    NestJS + BullMQ
+    <br>
+    - Consumes async jobs
+    - Retries failed tasks
+    - Dispatches service calls
+    - Executes background workflows
+    "]
+
+    class WORKER app
+    WORKER@{ shape: rounded }
+
+    %% =========================
+    %% MICROSERVICES
+    %% =========================
+
+    %% ---- Integration Gateway ----%%
+    INTEGRATION["
+    **Integration Gateway**
+    NestJS microservice
+    <br>
+    - Sends bank requests
+    - Sends insurance requests
+    - Executes payment requests
+    - Applies retry policies
+    - Implements circuit breakers
+    "]
+
+    class INTEGRATION domain
+    INTEGRATION@{ shape: trap-b }
+
+    %% ---- Notification Service ----%%
+    NOTIFY["
+    **Notification Service**
+    NestJS microservice
+    <br>
+    - Sends email notifications
+    - Sends SMS messages
+    - Manages templates
+    - Retries failed deliveries
+    "]
+
+    class NOTIFY domain
+    NOTIFY@{ shape: trap-b }
+
+    %% ---- Document Service ----%%
+    DOCS["
+    **Document Service**
+    NestJS microservice
+    <br>
+    - Generates PDF contracts
+    - Prepares signature requests
+    - Manages document lifecycle
+    "]
+
+    class DOCS domain
+    DOCS@{ shape: trap-b }
+
+    %% =========================
+    %% DATA STORES
+    %% =========================
+
+    %% ---- Relational ----%%
+    POSTGRES["
+    **Relational Database**
+    PostgreSQL
+    <br>
+    - Stores transactional data
+    - Maintains tenant schemas
+    - Enforces ACID guarantees
+    "]
+
+    class POSTGRES storage
+    POSTGRES@{ shape: cylinder }
+
+    %% ---- In-memory ----%%
+    REDIS["
+    **Cache & Job Queue**
+    Redis
+    <br>
+    - Stores cached aggregates
+    - Queues async jobs
+    - Coordinates background processing
+    "]
+
+    class REDIS storage
+    REDIS@{ shape: h-cyl }
+
+    %% ---- Object ----%%
+    OBJECTS["
+    **S3 Object Storage**
+    Hetzner
+    <br>
+    - Stores generated contracts
+    - Stores uploaded documents
+    - Serves document downloads
+    "]
+
+    class OBJECTS storage
+    OBJECTS@{ shape: cylinder }
+
+    %% =========================
+    %% OBSERVABILITY
+    %% =========================
+
+    OBS["
+    **Observability Stack**
+    Prometheus / Grafana
+    <br>
+    - Collects system metrics
+    - Aggregates telemetry
+    - Provides monitoring dashboards
+    "]
+
+    class OBS obs
+    OBS@{ shape: lean-r }
+end
+%% ===== SYSTEM BOUNDARY END =====
+
+%% =========================
+%% EXTERNAL SYSTEMS
+%% =========================
+
+BANK["Bank APIs"]
+INSURANCE["Insurance APIs"]
+PAYMENT["Payment Provider"]
+ESIGN["eSignature Platform"]
+
+class BANK,INSURANCE,PAYMENT,ESIGN external
+
+%% =========================
+%% INTERACTIONS
+%% =========================
+
+%% ---- System ----
+CLIENT -->|"Sends API requests | Sync | HTTPS | 443"| GATEWAY
+GATEWAY -->|"Routes API requests | Sync | HTTP REST | 8080"| API
+API -->|"Validates identity tokens | Sync | HTTPS | 443"| AUTH
+API -->|"Reads/writes transactional data | Sync | PostgreSQL | 5432"| POSTGRES
+API -->|"Sends external service request | Sync | HTTP REST | 3003"| INTEGRATION
+API -->|"Reads/writes cached data | Sync | Redis | 6379"| REDIS
+API -->|"Publishes domain events | Async message | Redis queue | 6379"| REDIS
+WORKER -->|"Consumes background jobs | Async message | Redis queue | 6379"| REDIS
+WORKER -->|"Sends notification commands | Sync | HTTP REST | 3001"| NOTIFY
+WORKER -->|"Requests document generation | Sync | HTTP REST | 3002"| DOCS
+DOCS -->|"Stores generated documents | Object API | HTTPS | 443"| OBJECTS
+
+%% ---- External ----
+INTEGRATION -->|"Requests loan processing  | Sync | HTTPS | 443"| BANK
+INTEGRATION -->|"Requests insurance quotes | Sync | HTTPS | 443"| INSURANCE
+INTEGRATION -->|"Executes payment transaction | Sync | HTTPS | 443"| PAYMENT
+INTEGRATION -->|"Creates signature requests | Sync | HTTPS | 443"| ESIGN
+
+%% ---- Observability ----
+API -.->|"Emits app metrics | Telemetry | OTLP | 4317"| OBS
+WORKER -.->|"Emits worker metrics | Telemetry | OTLP | 4317"| OBS
+GATEWAY -.->|"Exports gateway metrics | Prometheus scrape | HTTP | 9090"| OBS
+
+%% =========================
+%% PALETTE (LEGEND)
+%% =========================
+
+classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
+classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242,padding-right:16rem;
+classDef sec fill:#ccd9ff,stroke:#003399,color:#424242;
+classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
+classDef domain fill:#fff2cc,stroke:#f5a623,color:#424242;
+classDef storage fill:#e6f7e6,stroke:#7ed321,color:#424242;
+classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
+classDef external fill:#f5f5f5,stroke:#6b6b6b,stroke-dasharray: 5 5,color:#424242;
