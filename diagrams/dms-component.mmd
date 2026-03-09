@@ -1,81 +1,241 @@
 %% =========================================
 %% C4 Level 3 — Component Diagram
-%% Detailed internal REST API structure (NestJS Monolith)
+%% Core API (NestJS Modular Monolith)
 %% =========================================
 flowchart TB
-    %% =========================================
-    %% Elements
-    %% =========================================
 
-    %% Entry
-    CONTROLLERS["REST Controllers"]
+%% =========================================
+%% EXTERNAL CONTAINERS & SYSTEMS (direct interaction)
+%% =========================================
 
-    %% Cross-Cutting
-    AUTH["JWT Auth Guard"]
-    TENANT["Tenant Resolver"]
-    TX["Application Service /<br>Transaction Manager"]
+POSTGRES["**Relational Database**<br>PostgreSQL"]
+REDIS["**Cache + Job Queue**<br>Redis"]
+INTEGRATION["**Integration Service**<br>NestJS microservice"]
+AUTH_PROVIDER["**Identity Provider**<br>Keycloak / Auth0"]
 
-    %% Domain Modules
-    SALES["Sales Module"]
-    FIN["Financing Module"]
-    ACC["Accounting Module"]
-    DOC["Document Module"]
-    OPS["Dealer Ops Module"]
+class POSTGRES,REDIS storage
+class INTEGRATION domain
+class AUTH_PROVIDER sec
 
-    %% Infrastructure Adapters
-    REPOS["Repository Layer"]
-    STORAGE["Storage Adapter"]
+POSTGRES@{ shape: cyl }
+REDIS@{ shape: h-cyl }
+INTEGRATION@{ shape: trap-b }
+AUTH_PROVIDER@{ shape: hex }
 
-    %% =========================================
-    %% Relationships
-    %% =========================================
 
-    %% Cross-Cutting Flow
-    CONTROLLERS --> AUTH
-    AUTH --> TENANT
-    TENANT --> TX
+%% ===== CONTAINER BOUNDARY START =====
+subgraph CORE_API["Core API"]
 
-    %% Domain Flow
-    TX --> SALES
-    TX --> FIN
-    TX --> ACC
-    TX --> DOC
-    TX --> OPS
+%% =========================================
+%% SECURITY / POLICY
+%% =========================================
 
-    %% Infrastructure Flow
-    SALES --> REPOS
-    FIN --> REPOS
-    ACC --> REPOS
-    OPS --> REPOS
+AUTH_GUARD["
+**JWT Auth**
+NestJS Guard
+<br>
+- Validates JWT tokens
+- Enforces authenticated access
+"]
 
-    DOC --> STORAGE
+RBAC_GUARD["
+**RBAC**
+NestJS Guard
+<br>
+- Enforces role permissions
+- Applies platform access policies
+"]
 
-    %% =========================================
-    %% Legend (Authoritative)
-    %% =========================================
+TENANT_RESOLVER["
+**Tenant Resolver**
+NestJS Middleware
+<br>
+- Extracts tenant from JWT
+- Injects tenant context
+- Resolves DB schema
+"]
 
-    %% Shapes
-    CONTROLLERS@{ shape: rounded }
-    AUTH@{ shape: hex }
-    TENANT@{ shape: hex }
-    TX@{ shape: hex }
-    SALES@{ shape: trap-b }
-    FIN@{ shape: trap-b }
-    ACC@{ shape: trap-b }
-    DOC@{ shape: trap-b }
-    OPS@{ shape: trap-b }
-    REPOS@{ shape: rounded }
-    STORAGE@{ shape: rounded }
+TX_MANAGER["
+**Transaction Manager**
+NestJS Interceptor
+<br>
+- Opens DB transaction
+- Ensures atomic use-case execution
+- Commits / rollbacks state
+"]
 
-    %% Classes
-    class CONTROLLERS app
-    class AUTH,TENANT,TX sec
-    class SALES,FIN,ACC,DOC,OPS domain
-    class REPOS infra
-    class STORAGE infra
+class AUTH_GUARD,RBAC_GUARD,TENANT_RESOLVER,TX_MANAGER sec
 
-    %% Colors
-    classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
-    classDef sec fill:#ccd9ff,stroke:#003399,color:#424242;
-    classDef domain fill:#fff2cc,stroke:#f5a623,color:#424242;
-    classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;
+AUTH_GUARD@{ shape: hex }
+RBAC_GUARD@{ shape: hex }
+TENANT_RESOLVER@{ shape: hex }
+TX_MANAGER@{ shape: hex }
+
+%% =========================================
+%% APPLICATION LAYER
+%% =========================================
+
+CONTROLLERS["
+**REST Endpoints**
+NestJS Controllers
+<br>
+- Exposes REST endpoints
+- Validates request DTOs
+- Maps requests to use-cases
+"]
+
+USE_CASES["
+**Use Case Orchestrators**
+NestJS Services
+<br>
+- Orchestrates use-cases
+- Coordinates domain modules
+- Triggers async workflows
+"]
+
+class CONTROLLERS app
+class USE_CASES app
+
+CONTROLLERS@{ shape: rounded }
+USE_CASES@{ shape: rounded }
+
+%% =========================================
+%% DOMAIN MODULES
+%% =========================================
+
+SALES["
+**Sales Module**
+NestJS Module
+<br>
+- Manages vehicle offers
+- Tracks sales lifecycle
+- Enforces sales invariants
+"]
+
+FINANCING["
+**Financing Module**
+NestJS Module
+<br>
+- Submits loan applications
+- Tracks approval states
+- Enforces financing rules
+"]
+
+ACCOUNTING["
+**Accounting Module**
+NestJS Module
+<br>
+- Generates invoices
+- Maintains ledger entries
+- Ensures financial integrity
+"]
+
+DEALER_OPS["
+**Dealer Operations Module**
+NestJS Module
+<br>
+- Manages dealership data
+- Manages staff & permissions
+- Tracks inventory
+"]
+
+class SALES,FINANCING,ACCOUNTING,DEALER_OPS domain
+
+SALES@{ shape: trap-b }
+FINANCING@{ shape: trap-b }
+ACCOUNTING@{ shape: trap-b }
+DEALER_OPS@{ shape: trap-b }
+
+%% =========================================
+%% INFRASTRUCTURE ADAPTERS
+%% =========================================
+
+REPOSITORIES["
+**Repository Layer**
+ORM Adapters
+<br>
+- Persists domain entities
+- Executes tenant-scoped queries
+- Maps entities to database
+"]
+
+CACHE_ADAPTER["
+**Cache Adapter**
+Redis Client
+<br>
+- Caches frequently read aggregates
+- Reduces DB load
+"]
+
+EVENT_PUBLISHER["
+**Async Event Publisher**
+BullMQ Producer
+<br>
+- Publishes background jobs
+- Triggers async workflows
+"]
+
+INTEGRATION_CLIENT["
+**Integration Client**
+HTTP Client Adapter
+<br>
+- Calls Integration Service APIs
+- Delegates external workflows
+"]
+
+class REPOSITORIES,CACHE_ADAPTER,EVENT_PUBLISHER,INTEGRATION_CLIENT infra
+
+REPOSITORIES@{ shape: stadium }
+CACHE_ADAPTER@{ shape: stadium }
+EVENT_PUBLISHER@{ shape: stadium }
+INTEGRATION_CLIENT@{ shape: stadium }
+
+end
+%% ===== CONTAINER BOUNDARY END =====
+
+
+%% =========================================
+%% INTERACTIONS
+%% =========================================
+
+%% ---- Components ----
+CONTROLLERS -->|"Validates access<br>Sync | Guard"| AUTH_GUARD
+AUTH_GUARD -->|"Checks role permissions<br>Sync | Guard"| RBAC_GUARD
+RBAC_GUARD -->|"Resolves tenant context<br>Sync | Middleware"| TENANT_RESOLVER
+TENANT_RESOLVER -->|"Opens transactional scope<br>Sync | Interceptor"| TX_MANAGER
+TX_MANAGER -->|"Executes application use-case<br>Sync | Method call"| USE_CASES
+
+USE_CASES -->|"Invokes domain logic<br>Sync | Method call"| SALES
+USE_CASES -->|"Invokes domain logic<br>Sync | Method call"| FINANCING
+USE_CASES -->|"Invokes domain logic<br>Sync | Method call"| ACCOUNTING
+USE_CASES -->|"Invokes domain logic<br>Sync | Method call"| DEALER_OPS
+
+SALES -->|"Persists aggregates<br>Sync | ORM query"| REPOSITORIES
+FINANCING -->|"Persists aggregates<br>Sync | ORM query"| REPOSITORIES
+ACCOUNTING -->|"Persists financial state<br>Sync | ORM query"| REPOSITORIES
+DEALER_OPS -->|"Persists operational state<br>Sync | ORM query"| REPOSITORIES
+
+USE_CASES -->|"Caches read models<br>Sync | Redis"| CACHE_ADAPTER
+USE_CASES -->|"Publishes background job<br>Async | BullMQ"| EVENT_PUBLISHER
+USE_CASES -->|"Delegats external workflow<br>Sync | HTTP REST"| INTEGRATION_CLIENT
+
+%% ---- Containers ----
+AUTH_GUARD -->|"Verifies JWT signature<br>Sync | HTTPS"| AUTH_PROVIDER
+REPOSITORIES -->|"Reads/writes tenant data<br>Sync | PostgreSQL"| POSTGRES
+CACHE_ADAPTER -->|"Reads/writes cache<br>Sync | Redis"| REDIS
+EVENT_PUBLISHER -->|"Publishes async jobs<br>Async | Redis queue"| REDIS
+INTEGRATION_CLIENT -->|"Sends integration command<br>Sync | HTTP REST"| INTEGRATION
+
+%% =========================================
+%% PALETTE (LEGEND)
+%% =========================================
+
+classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
+classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;
+classDef sec fill:#ccd9ff,stroke:#003399,color:#424242;
+classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
+classDef domain fill:#fff2cc,stroke:#f5a623,color:#424242;
+classDef storage fill:#e6f7e6,stroke:#7ed321,color:#424242;
+classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
+classDef external fill:#f5f5f5,stroke:#6b6b6b,stroke-dasharray: 5 5,color:#424242;
+

@@ -6,9 +6,9 @@ flowchart LR
 
 %% ===== SYSTEM BOUNDARY START =====
 subgraph PLATFORM["DMS SaaS Platform"]
-    %% =========================
+    %% =========================================
     %% CLIENTS
-    %% =========================
+    %% =========================================
 
     CLIENT["
     **Dealer Web App**
@@ -22,9 +22,9 @@ subgraph PLATFORM["DMS SaaS Platform"]
 
     class CLIENT client
 
-    %% =========================
+    %% =========================================
     %% INFRASTRUCTURE
-    %% =========================
+    %% =========================================
 
     %% ---- Load balancer ----%%
     LB["
@@ -54,9 +54,9 @@ subgraph PLATFORM["DMS SaaS Platform"]
     class GATEWAY infra
     GATEWAY@{ shape: stadium }
 
-    %% =========================
+    %% =========================================
     %% SECURITY
-    %% =========================
+    %% =========================================
 
     AUTH["
     **Identity Provider**
@@ -71,9 +71,9 @@ subgraph PLATFORM["DMS SaaS Platform"]
     class AUTH sec
     AUTH@{ shape: hex }
 
-    %% =========================
+    %% =========================================
     %% APPLICATION
-    %% =========================
+    %% =========================================
 
     %% ---- Core API ----%%
     API["
@@ -105,9 +105,9 @@ subgraph PLATFORM["DMS SaaS Platform"]
     class WORKER app
     WORKER@{ shape: rounded }
 
-    %% =========================
+    %% =========================================
     %% MICROSERVICES
-    %% =========================
+    %% =========================================
 
     %% ---- Integration Service ----%%
     INTEGRATION["
@@ -151,9 +151,9 @@ subgraph PLATFORM["DMS SaaS Platform"]
     class DOCS domain
     DOCS@{ shape: trap-b }
 
-    %% =========================
+    %% =========================================
     %% DATA STORES
-    %% =========================
+    %% =========================================
 
     %% ---- Relational ----%%
     POSTGRES["
@@ -194,9 +194,9 @@ subgraph PLATFORM["DMS SaaS Platform"]
     class OBJECTS storage
     OBJECTS@{ shape: cylinder }
 
-    %% =========================
+    %% =========================================
     %% OBSERVABILITY
-    %% =========================
+    %% =========================================
 
     %% ---- Metrics ----
     OBS_METRICS["
@@ -226,9 +226,22 @@ subgraph PLATFORM["DMS SaaS Platform"]
 end
 %% ===== SYSTEM BOUNDARY END =====
 
-%% =========================
+%% =========================================
+%% ACTORS
+%% =========================================
+
+ANON["Anonymous Visitor"]
+CUSTOMER["Registered Customer"]
+SALES["Sales Agent"]
+DEALER_ADMIN["Dealer Administrator"]
+PLATFORM_ADMIN["Platform Administrator"]
+SUPPORT["Support Engineer"]
+
+class ANON,CUSTOMER,SALES,DEALER_ADMIN,PLATFORM_ADMIN,SUPPORT actor
+
+%% =========================================
 %% EXTERNAL SYSTEMS
-%% =========================
+%% =========================================
 
 BANK["Bank APIs"]
 INSURANCE["Insurance APIs"]
@@ -237,11 +250,11 @@ ESIGN["eSignature Platform"]
 
 class BANK,INSURANCE,PAYMENT,ESIGN external
 
-%% =========================
+%% =========================================
 %% INTERACTIONS
-%% =========================
+%% =========================================
 
-%% ---- System ----
+%% ---- Containers ----
 CLIENT -->|"Sends API requests | Sync | HTTPS | :443"| LB
 LB -->|"Forwards traffic | Sync | HTTP | :80"| GATEWAY
 GATEWAY -->|"Routes API requests | Sync | HTTP REST | :8080"| API
@@ -261,12 +274,6 @@ WORKER -->|"Requests document generation | Sync | HTTP REST | :3002"| DOCS
 
 DOCS -->|"Stores generated documents | Object API | HTTPS | :443"| OBJECTS
 
-%% ---- External Integrations ----
-INTEGRATION -->|"Requests loan processing  | Sync | HTTPS | :443"| BANK
-INTEGRATION -->|"Requests insurance quotes | Sync | HTTPS | :443"| INSURANCE
-INTEGRATION -->|"Executes payment transaction | Sync | HTTPS | :443"| PAYMENT
-INTEGRATION -->|"Creates signature requests | Sync | HTTPS | :443"| ESIGN
-
 %% ---- Metrics ----
 GATEWAY -.->|"Exports gateway metrics | Prometheus scrape | HTTP | :9113"| OBS_METRICS
 API -.->|"Exposes application metrics | Prometheus scrape | HTTP | :9464"| OBS_METRICS
@@ -283,9 +290,23 @@ NOTIFY -.->|"Ships service logs | Push | HTTP | :3100"| OBS_LOGS
 DOCS -.->|"Ships service logs | Push | HTTP | :3100"| OBS_LOGS
 INTEGRATION -.->|"Ships service logs | Push | HTTP | :3100"| OBS_LOGS
 
-%% =========================
+%% ---- Actors ----
+ANON -->|"Browses listings | Sync | HTTPS | :443"| CLIENT
+CUSTOMER -->|"Manages purchase | Sync | HTTPS | :443"| CLIENT
+SALES -->|"Operates sales | Sync | HTTPS | :443"| CLIENT
+DEALER_ADMIN -->|"Administers operations | Sync | HTTPS | :443"| CLIENT
+PLATFORM_ADMIN -->|"Manages tenants | Sync | HTTPS | :443"| CLIENT
+SUPPORT -->|"Accesses diagnostics | Sync | HTTPS | :443"| CLIENT
+
+%% ---- External Integrations ----
+INTEGRATION -->|"Requests loan processing  | Sync | HTTPS | :443"| BANK
+INTEGRATION -->|"Requests insurance quotes | Sync | HTTPS | :443"| INSURANCE
+INTEGRATION -->|"Executes payment transaction | Sync | HTTPS | :443"| PAYMENT
+INTEGRATION -->|"Creates signature requests | Sync | HTTPS | :443"| ESIGN
+
+%% =========================================
 %% PALETTE (LEGEND)
-%% =========================
+%% =========================================
 
 classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
 classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242,padding-right:16rem;
@@ -294,4 +315,5 @@ classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
 classDef domain fill:#fff2cc,stroke:#f5a623,color:#424242;
 classDef storage fill:#e6f7e6,stroke:#7ed321,color:#424242;
 classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
+classDef actor fill:#fff0f0,stroke:#d0021b,stroke-dasharray:4 4,color:#424242;
 classDef external fill:#f5f5f5,stroke:#6b6b6b,stroke-dasharray: 5 5,color:#424242;
