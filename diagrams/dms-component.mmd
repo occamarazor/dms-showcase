@@ -7,21 +7,22 @@ flowchart TB
 %% =========================================
 %% EXTERNAL CONTAINERS & SYSTEMS (direct interaction)
 %% =========================================
-
+GATEWAY["**API Gateway**<br>NGINX Reverse Proxy"]
 POSTGRES["**Relational Database**<br>PostgreSQL"]
 REDIS["**Cache + Job Queue**<br>Redis"]
 INTEGRATION["**Integration Service**<br>NestJS microservice"]
 AUTH_PROVIDER["**Identity Provider**<br>Keycloak / Auth0"]
 
+class GATEWAY infra
 class POSTGRES,REDIS storage
 class INTEGRATION domain
 class AUTH_PROVIDER sec
 
+GATEWAY@{ shape: stadium }
 POSTGRES@{ shape: cyl }
 REDIS@{ shape: h-cyl }
 INTEGRATION@{ shape: trap-b }
 AUTH_PROVIDER@{ shape: hex }
-
 
 %% ===== CONTAINER BOUNDARY START =====
 subgraph CORE_API["Core API"]
@@ -203,7 +204,7 @@ CONTROLLERS -->|"Validates access<br>Sync | Guard"| AUTH_GUARD
 AUTH_GUARD -->|"Checks role permissions<br>Sync | Guard"| RBAC_GUARD
 RBAC_GUARD -->|"Resolves tenant context<br>Sync | Middleware"| TENANT_RESOLVER
 TENANT_RESOLVER -->|"Opens transactional scope<br>Sync | Interceptor"| TX_MANAGER
-TX_MANAGER -->|"Executes application use-case<br>Sync | Method call"| USE_CASES
+TX_MANAGER -->|"Executes application use-cases<br>Sync | Method call"| USE_CASES
 
 USE_CASES -->|"Invokes domain logic<br>Sync | Method call"| SALES
 USE_CASES -->|"Invokes domain logic<br>Sync | Method call"| FINANCING
@@ -216,26 +217,23 @@ ACCOUNTING -->|"Persists financial state<br>Sync | ORM query"| REPOSITORIES
 DEALER_OPS -->|"Persists operational state<br>Sync | ORM query"| REPOSITORIES
 
 USE_CASES -->|"Caches read models<br>Sync | Redis"| CACHE_ADAPTER
-USE_CASES -->|"Publishes background job<br>Async | BullMQ"| EVENT_PUBLISHER
-USE_CASES -->|"Delegats external workflow<br>Sync | HTTP REST"| INTEGRATION_CLIENT
+USE_CASES -->|"Publishes background jobs<br>Async | BullMQ"| EVENT_PUBLISHER
+USE_CASES -->|"Delegats external workflows<br>Sync | HTTP REST"| INTEGRATION_CLIENT
 
 %% ---- Containers ----
+GATEWAY -->|"Routes API requests | Sync | HTTP REST"| CONTROLLERS
 AUTH_GUARD -->|"Verifies JWT signature<br>Sync | HTTPS"| AUTH_PROVIDER
 REPOSITORIES -->|"Reads/writes tenant data<br>Sync | PostgreSQL"| POSTGRES
 CACHE_ADAPTER -->|"Reads/writes cache<br>Sync | Redis"| REDIS
 EVENT_PUBLISHER -->|"Publishes async jobs<br>Async | Redis queue"| REDIS
-INTEGRATION_CLIENT -->|"Sends integration command<br>Sync | HTTP REST"| INTEGRATION
+INTEGRATION_CLIENT -->|"Sends integration commands<br>Sync | HTTP REST"| INTEGRATION
 
 %% =========================================
 %% PALETTE (LEGEND)
 %% =========================================
 
-classDef client fill:#ffe6e6,stroke:#d0021b,color:#424242;
 classDef infra fill:#e6f0ff,stroke:#4a90e2,color:#424242;
 classDef sec fill:#ccd9ff,stroke:#003399,color:#424242;
 classDef app fill:#ffeacc,stroke:#ff6d00,color:#424242;
 classDef domain fill:#fff2cc,stroke:#f5a623,color:#424242;
 classDef storage fill:#e6f7e6,stroke:#7ed321,color:#424242;
-classDef obs fill:#f9e6ff,stroke:#9013fe,color:#424242;
-classDef external fill:#f5f5f5,stroke:#6b6b6b,stroke-dasharray: 5 5,color:#424242;
-

@@ -46,19 +46,19 @@ ESIGN["eSignature Service"]
 %% =========================
 
 %% ---- Actors ----
-ANON -->|Browse listings<br>Save favourites| DMS
-CUSTOMER -->|Apply for financing<br>Select insurance<br>Sign contract| DMS
-SALES -->|Create offers<br>Submit financing<br>Generate contracts| DMS
-DEALER_ADMIN -->|Manage dealership<br>Inventory<br>Staff| DMS
-PLATFORM_ADMIN -->|Create tenants<br>Assign SaaS tiers| DMS
-SUPPORT -->|Investigate incidents<br>Tenant diagnostics| DMS
+ANON -->|Browses listings<br>Saves favourites| DMS
+CUSTOMER -->|Applies for financing<br>Selects insurance<br>Signs contract| DMS
+SALES -->|Creates offers<br>Submits financing<br>Generates contracts| DMS
+DEALER_ADMIN -->|Manages dealership<br>Inventory<br>Staff| DMS
+PLATFORM_ADMIN -->|Creates tenants<br>Assigns SaaS tiers| DMS
+SUPPORT -->|Investigates incidents<br>Tenant diagnostics| DMS
 
 %% ---- External Systems ----
-DMS -->|Submit loan applications<br>Receive approval| BANKS
-DMS -->|Request insurance quotes<br>Issue policies| INSURANCE
-DMS -->|Process payments| PAYMENT
-DMS -->|Verify VIN<br>Submit registration| VEHICLE_REG
-DMS -->|Send contracts for signing<br>Receive signed docs| ESIGN
+DMS -->|Submits loan applications<br>Receives approval| BANKS
+DMS -->|Requests insurance quotes<br>Issues policies| INSURANCE
+DMS -->|Processes payments| PAYMENT
+DMS -->|Verifies VIN<br>Submits registration| VEHICLE_REG
+DMS -->|Sends contracts for signing<br>Receives signed docs| ESIGN
 
 %% =========================
 %% SHAPES
